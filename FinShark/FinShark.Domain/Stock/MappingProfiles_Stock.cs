@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
-using FinShark.Domain.Stock;
 using DB = FinShark.DAL.Models;
 
-namespace FinShark.Domain;
+namespace FinShark.Domain.Stock;
 
-public class MappingProfiles : Profile
+public class MappingProfiles_Stock : Profile
 {
-    public MappingProfiles()
+    public MappingProfiles_Stock()
     {
         CreateMap<DB.Stock, StockDto>();
         CreateMap<CreateStockRequestDto, DB.Stock>();
+        CreateMap<UpdateStockRequestDto, DB.Stock>();
     }
 }

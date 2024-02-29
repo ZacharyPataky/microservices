@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FinShark.API.Controllers;
 
-[Route("api/stock")]
 [ApiController]
+[Route("api/stock")]
 public class StockController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -47,5 +47,25 @@ public class StockController : ControllerBase
             nameof(GetStockById),
             new { id = stockModel.Id },
             _mapper.Map<StockDto>(stockModel));
+    }
+
+    [HttpPut]
+    [Route("{id}")]
+    public IActionResult UpdateStock([FromRoute] int id, [FromBody] UpdateStockRequestDto stockDto)
+    {
+        var stockModel = _context.Stocks.FirstOrDefault(stock => stock.Id == id);
+
+        if (stockModel == null)
+            return NotFound();
+
+        stockModel.Symbol = stockDto.Symbol;
+        stockModel.CompanyName= stockDto.CompanyName;
+        stockModel.Purchase= stockDto.Purchase;
+        stockModel.LastDiv = stockDto.LastDiv;
+        stockModel.Industry = stockDto.Industry;
+        stockModel.MarketCap = stockDto.MarketCap;
+
+        _context.SaveChanges();
+        return Ok(_mapper.Map<StockDto>(stockModel));
     }
 }

@@ -1,5 +1,6 @@
 using FinShark.DAL.Models;
-using FinShark.Domain;
+using FinShark.Domain.Stock;
+using FinShark.Domain.Comment;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Add AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfiles));
+builder.Services.AddAutoMapper(typeof(MappingProfiles_Stock));
+builder.Services.AddAutoMapper(typeof(MappingProfiles_Comment));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
