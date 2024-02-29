@@ -1,4 +1,6 @@
-﻿using FinShark.DAL.Models;
+﻿using AutoMapper;
+using FinShark.DAL.Models;
+using FinShark.Domain.Stock;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinShark.API.Controllers;
@@ -8,16 +10,19 @@ namespace FinShark.API.Controllers;
 public class StockController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IMapper _mapper;
 
-    public StockController(ApplicationDbContext context)
+    public StockController(ApplicationDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     [HttpGet]
     public IActionResult GetStocks()
     {
-        var stocks = _context.Stocks.ToList();
+        var stocks = _context.Stocks.ToList()
+            .Select(stock => _mapper.Map<StockDto>(stock));
         return Ok(stocks);
     }
 
@@ -29,6 +34,18 @@ public class StockController : ControllerBase
         if (stock == null)
             return NotFound();
 
-        return Ok(stock);
+        return Ok(_mapper.Map<StockDto>(stock));
+    }
+
+    [HttpPost]
+    public IActionResult CreateStock([FromBody] CreateStockRequestDto stockDto)
+    {
+        var stockModel = _mapper.Map<Stock>(stockDto);
+        _context.Stocks.Add(stockModel);
+        _context.SaveChanges();
+        return CreatedAtAction(
+            nameof(GetStockById),
+            new { id = stockModel.Id },
+            _mapper.Map<StockDto>(stockModel));
     }
 }
