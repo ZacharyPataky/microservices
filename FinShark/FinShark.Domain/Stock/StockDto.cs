@@ -1,4 +1,6 @@
-﻿namespace FinShark.Domain.Stock;
+﻿using FinShark.Domain.Comment;
+
+namespace FinShark.Domain.Stock;
 
 public class StockDto
 {
@@ -10,5 +12,5 @@ public class StockDto
     public string Industry { get; set; } = string.Empty;
     public long MarketCap { get; set; }
 
-    // Omitting Comments
+    public List<CommentDto> Comments { get; set; }
 }

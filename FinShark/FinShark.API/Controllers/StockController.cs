@@ -22,51 +22,54 @@ public class StockController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetStocks()
     {
-        var stocks = await _stockRepo.GetStocksAsync();
-        var stockDtos = stocks.Select(_mapper.Map<StockDto>);
+        var stocksModels = await _stockRepo.GetStocksAsync();
+        var stockDtos = stocksModels.Select(_mapper.Map<StockDto>);
 
         return Ok(stockDtos);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetStockById([FromRoute] int id)
+    [HttpGet("{stockId}")]
+    public async Task<IActionResult> GetStockById([FromRoute] int stockId)
     {
-        var stock = await _stockRepo.GetStockByIdAsync(id);
-
-        if (stock == null)
-            return NotFound();
-
-        return Ok(_mapper.Map<StockDto>(stock));
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateStock([FromBody] CreateStockRequestDto stockDto)
-    {
-        var stockModel = _mapper.Map<Stock>(stockDto);
-        await _stockRepo.CreateStockAsync(stockModel);
-        return CreatedAtAction(
-            nameof(GetStockById),
-            new { id = stockModel.Id },
-            _mapper.Map<StockDto>(stockModel));
-    }
-
-    [HttpPut]
-    [Route("{id}")]
-    public async Task<IActionResult> UpdateStock([FromRoute] int id, [FromBody] UpdateStockRequestDto stockDto)
-    {
-        var stockModel = await _stockRepo.UpdateStockAsync(id, stockDto);
+        var stockModel = await _stockRepo.GetStockByIdAsync(stockId);
 
         if (stockModel == null)
             return NotFound();
 
-        return Ok(_mapper.Map<StockDto>(stockModel));
+        var stockDto = _mapper.Map<StockDto>(stockModel);
+        return Ok(stockDto);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateStock([FromBody] CreateStockRequestDto createStockRequestDto)
+    {
+        var stockModel = _mapper.Map<Stock>(createStockRequestDto);
+        await _stockRepo.CreateStockAsync(stockModel);
+        var StockDto = _mapper.Map<StockDto>(stockModel);
+        return CreatedAtAction(
+            nameof(GetStockById),
+            new { id = stockModel.Id },
+            StockDto);
+    }
+
+    [HttpPut]
+    [Route("{stockId}")]
+    public async Task<IActionResult> UpdateStock([FromRoute] int stockId, [FromBody] UpdateStockRequestDto updateStockRequestDto)
+    {
+        var stockModel = await _stockRepo.UpdateStockAsync(stockId, updateStockRequestDto);
+
+        if (stockModel == null)
+            return NotFound();
+
+        var stockDto = _mapper.Map<StockDto>(stockModel);
+        return Ok(stockDto);
     }
 
     [HttpDelete]
-    [Route("{id}")]
-    public async Task<IActionResult> DeleteStock([FromRoute] int id)
+    [Route("{stockId}")]
+    public async Task<IActionResult> DeleteStock([FromRoute] int stockId)
     {
-        var stockModel = await _stockRepo.DeleteStockAsync(id);
+        var stockModel = await _stockRepo.DeleteStockAsync(stockId);
 
         if (stockModel == null)
             return NotFound();

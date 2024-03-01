@@ -22,9 +22,10 @@ public class StockRepository : IStockRepository
         return stockModel;
     }
 
-    public async Task<DB.Stock?> DeleteStockAsync(int id)
+    public async Task<DB.Stock?> DeleteStockAsync(int stockId)
     {
-        var stockModel = await _context.Stocks.FirstOrDefaultAsync(stock => stock.Id == id);
+        var stockModel = await _context.Stocks
+            .FirstOrDefaultAsync(stock => stock.Id == stockId);
 
         if (stockModel == null)
             return null;
@@ -34,19 +35,29 @@ public class StockRepository : IStockRepository
         return stockModel;
     }
 
-    public async Task<DB.Stock?> GetStockByIdAsync(int id)
+    public async Task<DB.Stock?> GetStockByIdAsync(int stockId)
     {
-        return await _context.Stocks.FindAsync(id);
+        return await _context.Stocks
+            .Include(comment => comment.Comments)
+            .FirstOrDefaultAsync(stock => stock.Id == stockId);
     }
 
     public async Task<List<DB.Stock>> GetStocksAsync()
     {
-        return await _context.Stocks.ToListAsync();
+        return await _context.Stocks
+            .Include(comment => comment.Comments)
+            .ToListAsync();
     }
 
-    public async Task<DB.Stock> UpdateStockAsync(int id, UpdateStockRequestDto stockDto)
+    public Task<bool> StockExists(int stockId)
     {
-        var existingStock = await _context.Stocks.FirstOrDefaultAsync(stock => stock.Id == id);
+        return _context.Stocks.AnyAsync(stock => stock.Id == stockId);
+    }
+
+    public async Task<DB.Stock> UpdateStockAsync(int stockId, UpdateStockRequestDto stockDto)
+    {
+        var existingStock = await _context.Stocks
+            .FirstOrDefaultAsync(stock => stock.Id == stockId);
 
         if (existingStock == null)
             return null;
