@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FinShark.DAL.Models;
+using FinShark.Domain;
 using FinShark.Domain.Interfaces;
 using FinShark.Domain.Stock;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,12 @@ public class StockController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetStocks()
+    public async Task<IActionResult> GetStocks([FromQuery] QueryObject queryObject)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var stocksModels = await _stockRepo.GetStocksAsync();
+        var stocksModels = await _stockRepo.GetStocksAsync(queryObject);
         var stockDtos = stocksModels.Select(_mapper.Map<StockDto>);
 
         return Ok(stockDtos);

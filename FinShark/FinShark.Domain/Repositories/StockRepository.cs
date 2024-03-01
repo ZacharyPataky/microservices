@@ -42,11 +42,23 @@ public class StockRepository : IStockRepository
             .FirstOrDefaultAsync(stock => stock.Id == stockId);
     }
 
-    public async Task<List<DB.Stock>> GetStocksAsync()
+    public async Task<List<DB.Stock>> GetStocksAsync(QueryObject queryObject)
     {
-        return await _context.Stocks
+        var stockModels = _context.Stocks
             .Include(comment => comment.Comments)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(queryObject.CompanyName))
+            stockModels = stockModels
+                .Where(stock => stock.CompanyName
+                    .Contains(queryObject.CompanyName));
+
+        if (!string.IsNullOrWhiteSpace(queryObject.Symbol))
+            stockModels = stockModels
+                .Where(stock => stock.Symbol
+                    .Contains(queryObject.Symbol));
+
+        return await stockModels.ToListAsync();
     }
 
     public Task<bool> StockExists(int stockId)
