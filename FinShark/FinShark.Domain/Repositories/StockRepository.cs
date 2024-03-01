@@ -48,23 +48,34 @@ public class StockRepository : IStockRepository
             .Include(comment => comment.Comments)
             .AsQueryable();
 
+        // Query Params /////////////////////////////////////////////////////////
+
+        // Company Name
         if (!string.IsNullOrWhiteSpace(queryObject.CompanyName))
             stockModels = stockModels
                 .Where(stock => stock.CompanyName
                     .Contains(queryObject.CompanyName));
 
+        // Symbol
         if (!string.IsNullOrWhiteSpace(queryObject.Symbol))
             stockModels = stockModels
                 .Where(stock => stock.Symbol
                     .Contains(queryObject.Symbol));
 
+        // Sort
         if (!string.IsNullOrWhiteSpace(queryObject.SortBy))
             if (queryObject.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
                 stockModels = queryObject.IsDescending ? 
                     stockModels.OrderByDescending(stock => stock.Symbol) :
                     stockModels.OrderBy(stock => stock.Symbol);
 
-        return await stockModels.ToListAsync();
+        // Pagination
+        var skipNumber = (queryObject.PageNumber - 1) * queryObject.PageSize;
+
+        return await stockModels
+            .Skip(skipNumber)
+            .Take(queryObject.PageSize)
+            .ToListAsync();
     }
 
     public Task<bool> StockExists(int stockId)
