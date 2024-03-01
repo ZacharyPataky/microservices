@@ -1,4 +1,5 @@
 ﻿using FinShark.DAL.Models;
+using FinShark.Domain.Comment;
 using FinShark.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using DB = FinShark.DAL.Models;
@@ -42,5 +43,20 @@ public class CommentRepository : ICommentRepository
     public async Task<List<DB.Comment>> GetCommentsAsync()
     {
         return await _context.Comments.ToListAsync();
+    }
+
+    public async Task<DB.Comment?> UpdateCommentAsync(int commentId, UpdateCommentRequestDto updateCommentRequestDto)
+    {
+        var existingComment = await _context.Comments.FindAsync(commentId);
+
+        if (existingComment == null)
+            return null;
+
+        existingComment.Title = updateCommentRequestDto.Title;
+        existingComment.Content = updateCommentRequestDto.Content;
+
+        await _context.SaveChangesAsync(true);
+
+        return existingComment;
     }
 }

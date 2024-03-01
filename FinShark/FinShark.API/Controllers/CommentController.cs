@@ -31,7 +31,7 @@ public class CommentController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{commentId}")]
+    [Route("{commentId:int}")]
     public async Task<IActionResult> GetCommentById([FromRoute] int commentId)
     {
         var commentModel = await _commentRepo.GetCommentByIdAsync(commentId);
@@ -44,8 +44,8 @@ public class CommentController : ControllerBase
     }
 
     [HttpPost]
-    [Route("{stockId}")]
-    public async Task<IActionResult> CreateComment([FromRoute] int stockId, CreateCommentRequestDto createCommentRequestDto)
+    [Route("{stockId:int}")]
+    public async Task<IActionResult> CreateComment([FromRoute] int stockId, [FromBody] CreateCommentRequestDto createCommentRequestDto)
     {
         if (!await _stockRepo.StockExists(stockId))
             return BadRequest("The stock does not exist.");
@@ -57,12 +57,25 @@ public class CommentController : ControllerBase
         var commentDto = _mapper.Map<CommentDto>(commentModel);
         return CreatedAtAction(
             nameof(GetCommentById),
-            new { id = commentModel },
+            new { commentId = commentModel.Id },
             commentDto);
     }
 
+    [HttpPut]
+    [Route("{commentId:int}")]
+    public async Task<IActionResult> UpdateComment([FromRoute] int commentId, [FromBody] UpdateCommentRequestDto updateCommentRequestDto)
+    {
+        var commentModel = await _commentRepo.UpdateCommentAsync(commentId, updateCommentRequestDto);
+
+        if (commentModel == null)
+            return NotFound();
+
+        var commentDto = _mapper.Map<CommentDto>(commentModel);
+        return Ok(commentDto);
+    }
+
     [HttpDelete]
-    [Route("{commentId}")]
+    [Route("{commentId:int}")]
     public async Task<IActionResult> DeleteComment([FromRoute] int commentId)
     {
         var commentModel = await _commentRepo.DeleteCommentAsync(commentId);
