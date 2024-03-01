@@ -10,13 +10,11 @@ namespace FinShark.API.Controllers;
 [Route("api/stock")]
 public class StockController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
     private readonly IStockRepository _stockRepo;
     private readonly IMapper _mapper;
 
-    public StockController(ApplicationDbContext context, IStockRepository stockRepo, IMapper mapper)
+    public StockController(IStockRepository stockRepo, IMapper mapper)
     {
-        _context = context;
         _stockRepo = stockRepo;
         _mapper = mapper;
     }
@@ -25,7 +23,9 @@ public class StockController : ControllerBase
     public async Task<IActionResult> GetStocks()
     {
         var stocks = await _stockRepo.GetStocksAsync();
-        return Ok(stocks);
+        var stockDtos = stocks.Select(_mapper.Map<StockDto>);
+
+        return Ok(stockDtos);
     }
 
     [HttpGet("{id}")]
