@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace FinShark.DAL.Models;
+namespace Stocks.Models;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions dbContextOptions) 
+    public ApplicationDbContext(DbContextOptions dbContextOptions)
         : base(dbContextOptions)
     {
 
