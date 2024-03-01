@@ -24,6 +24,9 @@ public class CommentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetComments()
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var commentModels = await _commentRepo.GetCommentsAsync();
         var commentDtos = commentModels.Select(_mapper.Map<CommentDto>);
 
@@ -34,8 +37,10 @@ public class CommentController : ControllerBase
     [Route("{commentId:int}")]
     public async Task<IActionResult> GetCommentById([FromRoute] int commentId)
     {
-        var commentModel = await _commentRepo.GetCommentByIdAsync(commentId);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var commentModel = await _commentRepo.GetCommentByIdAsync(commentId);
         if (commentModel == null)
             return NotFound();
 
@@ -47,13 +52,16 @@ public class CommentController : ControllerBase
     [Route("{stockId:int}")]
     public async Task<IActionResult> CreateComment([FromRoute] int stockId, [FromBody] CreateCommentRequestDto createCommentRequestDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (!await _stockRepo.StockExists(stockId))
             return BadRequest("The stock does not exist.");
 
         var commentModel = _mapper.Map<Comment>(createCommentRequestDto);
         commentModel.StockId = stockId;
-
         await _commentRepo.CreateCommentAsync(commentModel);
+
         var commentDto = _mapper.Map<CommentDto>(commentModel);
         return CreatedAtAction(
             nameof(GetCommentById),
@@ -65,8 +73,10 @@ public class CommentController : ControllerBase
     [Route("{commentId:int}")]
     public async Task<IActionResult> UpdateComment([FromRoute] int commentId, [FromBody] UpdateCommentRequestDto updateCommentRequestDto)
     {
-        var commentModel = await _commentRepo.UpdateCommentAsync(commentId, updateCommentRequestDto);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var commentModel = await _commentRepo.UpdateCommentAsync(commentId, updateCommentRequestDto);
         if (commentModel == null)
             return NotFound();
 
@@ -78,8 +88,10 @@ public class CommentController : ControllerBase
     [Route("{commentId:int}")]
     public async Task<IActionResult> DeleteComment([FromRoute] int commentId)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var commentModel = await _commentRepo.DeleteCommentAsync(commentId);
-        
         if (commentModel == null) 
             return NotFound("The comment does not exist.");
 

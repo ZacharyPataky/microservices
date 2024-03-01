@@ -22,6 +22,9 @@ public class StockController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetStocks()
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var stocksModels = await _stockRepo.GetStocksAsync();
         var stockDtos = stocksModels.Select(_mapper.Map<StockDto>);
 
@@ -31,8 +34,10 @@ public class StockController : ControllerBase
     [HttpGet("{stockId:int}")]
     public async Task<IActionResult> GetStockById([FromRoute] int stockId)
     {
-        var stockModel = await _stockRepo.GetStockByIdAsync(stockId);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var stockModel = await _stockRepo.GetStockByIdAsync(stockId);
         if (stockModel == null)
             return NotFound();
 
@@ -43,8 +48,12 @@ public class StockController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateStock([FromBody] CreateStockRequestDto createStockRequestDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var stockModel = _mapper.Map<Stock>(createStockRequestDto);
         await _stockRepo.CreateStockAsync(stockModel);
+
         var StockDto = _mapper.Map<StockDto>(stockModel);
         return CreatedAtAction(
             nameof(GetStockById),
@@ -56,8 +65,10 @@ public class StockController : ControllerBase
     [Route("{stockId:int}")]
     public async Task<IActionResult> UpdateStock([FromRoute] int stockId, [FromBody] UpdateStockRequestDto updateStockRequestDto)
     {
-        var stockModel = await _stockRepo.UpdateStockAsync(stockId, updateStockRequestDto);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var stockModel = await _stockRepo.UpdateStockAsync(stockId, updateStockRequestDto);
         if (stockModel == null)
             return NotFound();
 
@@ -69,8 +80,10 @@ public class StockController : ControllerBase
     [Route("{stockId:int}")]
     public async Task<IActionResult> DeleteStock([FromRoute] int stockId)
     {
-        var stockModel = await _stockRepo.DeleteStockAsync(stockId);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
+        var stockModel = await _stockRepo.DeleteStockAsync(stockId);
         if (stockModel == null)
             return NotFound();
 
