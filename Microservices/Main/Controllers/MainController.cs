@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Shared.Comments;
+using Shared.Models;
 using Shared.Stocks;
-using System.Net.Mime;
 
 namespace Main.Controllers;
 
@@ -65,7 +66,7 @@ public class MainController : ControllerBase
         var httpContent = new StringContent(
             JsonConvert.SerializeObject(createStockRequestDto), 
             System.Text.Encoding.UTF8, 
-            MediaTypeNames.Application.Json);
+            "application/json");
         var response = await httpClient.PostAsync(_stocksBase, httpContent);
 
         if (!response.IsSuccessStatusCode)
@@ -118,7 +119,7 @@ public class MainController : ControllerBase
         var httpContent = new StringContent(
             JsonConvert.SerializeObject(createCommentRequestDto),
             System.Text.Encoding.UTF8,
-            MediaTypeNames.Application.Json);
+            "application/json");
         var response = await httpClient.PostAsync(_commentsBase + $"/{stockId}", httpContent);
 
         if (!response.IsSuccessStatusCode)
@@ -132,6 +133,42 @@ public class MainController : ControllerBase
     #endregion
 
     #region Both
+
+    [HttpPost]
+    [Route("both")]
+    public async Task<IActionResult> CreateBoth([FromBody] CreateBothRequestDto createBothRequestDto)
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+     
+        // Stock
+        var stockHttpContent = new StringContent(
+            JsonConvert.SerializeObject(createBothRequestDto.CreateStockRequestDto),
+            System.Text.Encoding.UTF8,
+            "application/json");
+        var stockResponse = await httpClient.PostAsync(_stocksBase, stockHttpContent);
+
+        if (!stockResponse.IsSuccessStatusCode)
+            return BadRequest("Stock failed.");
+
+        string stockResponseBody = await stockResponse.Content.ReadAsStringAsync();
+        var stockDto = JsonConvert.DeserializeObject<StockDto>(stockResponseBody);
+        var stockId = stockDto!.Id;
+
+        // Comment
+        var commentHttpContent = new StringContent(
+            JsonConvert.SerializeObject(createBothRequestDto.CreateCommentRequestDto),
+            System.Text.Encoding.UTF8,
+            "application/json");
+        var commentResponse = await httpClient.PostAsync(_commentsBase + $"/{stockId}", commentHttpContent);
+
+        if (!commentResponse.IsSuccessStatusCode)
+        {
+            await httpClient.DeleteAsync(_stocksBase + $"/{stockId}");
+            return BadRequest("Comment failed.");
+        }
+
+        return Ok("Both the stock and comment were created.");
+    }
 
     #endregion
 }
