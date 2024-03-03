@@ -1,8 +1,6 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Shared.Comments;
-using Shared.Models;
 using Shared.Stocks;
 
 namespace Main.Controllers;
@@ -11,8 +9,10 @@ namespace Main.Controllers;
 [Route("api/main")]
 public class MainController : ControllerBase
 {
-    private string _stocksBase;
-    private string _commentsBase;
+    private string _apiGateway_Stock;
+    private string _apiGateway_Stock_Id;
+    private string _apiGateway_Comment;
+    private string _apiGateway_Comment_Id;
 
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -22,8 +22,10 @@ public class MainController : ControllerBase
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
 
-        _stocksBase = _configuration.GetValue<string>("StocksBase")!;
-        _commentsBase = _configuration.GetValue<string>("CommentsBase")!;
+        _apiGateway_Stock = _configuration.GetValue<string>("ApiGateway_Stock")!;
+        _apiGateway_Stock_Id = _configuration.GetValue<string>("ApiGateway_Stock_Id")!;
+        _apiGateway_Comment = _configuration.GetValue<string>("ApiGateway_Comment")!;
+        _apiGateway_Comment_Id = _configuration.GetValue<string>("ApiGateway_Comment_Id")!;
     }
 
     #region Stocks
@@ -33,7 +35,7 @@ public class MainController : ControllerBase
     public async Task<IActionResult> GetStocks()
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var response = await httpClient.GetAsync(_stocksBase);
+        var response = await httpClient.GetAsync(_apiGateway_Stock);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -48,7 +50,8 @@ public class MainController : ControllerBase
     public async Task<IActionResult> GetStockById([FromRoute] int stockId)
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var response = await httpClient.GetAsync(_stocksBase + $"/{stockId}");
+        var reqUrl = _apiGateway_Stock_Id.Replace("###ID###", stockId.ToString());
+        var response = await httpClient.GetAsync(reqUrl);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -60,14 +63,14 @@ public class MainController : ControllerBase
 
     [HttpPost]
     [Route("stocks")]
-    public async Task<IActionResult> CreateStock([FromBody] CreateCommentRequestDto createStockRequestDto)
+    public async Task<IActionResult> CreateStock([FromBody] CreateStockRequestDto createStockRequestDto)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var httpContent = new StringContent(
             JsonConvert.SerializeObject(createStockRequestDto), 
             System.Text.Encoding.UTF8, 
             "application/json");
-        var response = await httpClient.PostAsync(_stocksBase, httpContent);
+        var response = await httpClient.PostAsync(_apiGateway_Stock, httpContent);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -86,7 +89,7 @@ public class MainController : ControllerBase
     public async Task<IActionResult> GetComments()
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var response = await httpClient.GetAsync(_commentsBase);
+        var response = await httpClient.GetAsync(_apiGateway_Comment);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -101,7 +104,8 @@ public class MainController : ControllerBase
     public async Task<IActionResult> GetCommentById([FromRoute] int commentId)
     {
         var httpClient = _httpClientFactory.CreateClient();
-        var response = await httpClient.GetAsync(_commentsBase + $"/{commentId}");
+        var reqUrl = _apiGateway_Comment_Id.Replace("###ID###", commentId.ToString());
+        var response = await httpClient.GetAsync(reqUrl);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -120,7 +124,8 @@ public class MainController : ControllerBase
             JsonConvert.SerializeObject(createCommentRequestDto),
             System.Text.Encoding.UTF8,
             "application/json");
-        var response = await httpClient.PostAsync(_commentsBase + $"/{stockId}", httpContent);
+        var reqUrl = _apiGateway_Comment_Id.Replace("###ID###", stockId.ToString());
+        var response = await httpClient.PostAsync(reqUrl, httpContent);
 
         if (!response.IsSuccessStatusCode)
             return BadRequest();
@@ -145,7 +150,7 @@ public class MainController : ControllerBase
             JsonConvert.SerializeObject(createBothRequestDto.CreateStockRequestDto),
             System.Text.Encoding.UTF8,
             "application/json");
-        var stockResponse = await httpClient.PostAsync(_stocksBase, stockHttpContent);
+        var stockResponse = await httpClient.PostAsync(_apiGateway_Stock, stockHttpContent);
 
         if (!stockResponse.IsSuccessStatusCode)
             return BadRequest("Stock failed.");
@@ -159,11 +164,13 @@ public class MainController : ControllerBase
             JsonConvert.SerializeObject(createBothRequestDto.CreateCommentRequestDto),
             System.Text.Encoding.UTF8,
             "application/json");
-        var commentResponse = await httpClient.PostAsync(_commentsBase + $"/{stockId}", commentHttpContent);
+        var reqUrl = _apiGateway_Comment_Id.Replace("###ID###", stockId.ToString());
+        var commentResponse = await httpClient.PostAsync(reqUrl, commentHttpContent);
 
         if (!commentResponse.IsSuccessStatusCode)
         {
-            await httpClient.DeleteAsync(_stocksBase + $"/{stockId}");
+            var reqUrlDel = _apiGateway_Stock_Id.Replace("###ID###", stockId.ToString());
+            await httpClient.DeleteAsync(reqUrlDel);
             return BadRequest("Comment failed.");
         }
 
