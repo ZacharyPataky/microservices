@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
+using Shared.Stocks;
 using Microsoft.AspNetCore.Mvc;
-using Stocks.DTOs;
-using Stocks.Helpers;
-using Stocks.Interfaces;
-using Stocks.Models;
+using Shared.Models;
+using Shared;
+using Shared.Interfaces;
 
 namespace Stocks.Controllers;
 

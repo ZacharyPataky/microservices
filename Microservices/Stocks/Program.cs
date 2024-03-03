@@ -1,8 +1,8 @@
+using DTOs;
 using Microsoft.EntityFrameworkCore;
-using Stocks.DTOs;
-using Stocks.Interfaces;
-using Stocks.Models;
-using Stocks.Repositories;
+using Shared.Interfaces;
+using Shared.Models;
+using Shared.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

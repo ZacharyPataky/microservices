@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Comments.DTOs;
-using Comments.Interfaces;
-using Comments.Models;
+using Shared.Comments;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Interfaces;
+using Shared.Models;
 
 namespace Comments.Controllers;
 
